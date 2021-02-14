@@ -72,7 +72,7 @@ contract Voting {
     // through voters 
     
     function returnnumberofVotingShares(bytes32 uid) public returns (uint) {
-        return Voter[uid].numberofVotingShares
+        return Voter[uid].numberofVotingShares;
     }
 
     function totalVotes(uint StrategicDecisionID) view public returns (uint) {
