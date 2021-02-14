@@ -22,37 +22,37 @@ window.App = {
     // creates an VotingContract instance that represents default address managed by VotingContract
     VotingContract.deployed().then(function(instance){
 
-      // calls getNumOfCandidates() function in Smart Contract, 
+      // calls getNumOfproposals() function in Smart Contract, 
       // this is not a transaction though, since the function is marked with "view" and
       // truffle contract automatically knows this
-      instance.getNumOfCandidates().then(function(numOfCandidates){
+      instance.getNumOfproposals().then(function(numOfproposals){
 
-        // adds candidates to Contract if there aren't any
-        if (numOfCandidates == 0){
-          // calls addCandidate() function in Smart Contract and adds candidate with name "Candidate1"
+        // adds proposals to Contract if there aren't any
+        if (numOfproposals == 0){
+          // calls addproposal() function in Smart Contract and adds proposal with name "proposal1"
           // the return value "result" is just the transaction, which holds the logs,
-          // which is an array of trigger events (1 item in this case - "addedCandidate" event)
-          // We use this to get the candidateID
-          instance.addCandidate("Candidate1","Democratic").then(function(result){ 
-            $("#candidate-box").append(`<div class='form-check'><input class='form-check-input' type='checkbox' value='' id=${result.logs[0].args.candidateID}><label class='form-check-label' for=0>Candidate1</label></div>`)
+          // which is an array of trigger events (1 item in this case - "addedproposal" event)
+          // We use this to get the proposalID
+          instance.addproposal("shareholder proposal: increase amount of sustainable business","sustainability").then(function(result){ 
+            $("#proposal-box").append(`<div class='form-check'><input class='form-check-input' type='checkbox' value='' id=${result.logs[0].args.proposalID}><label class='form-check-label' for=0>proposal1</label></div>`)
           })
-          instance.addCandidate("Candidate2","Republican").then(function(result){
-            $("#candidate-box").append(`<div class='form-check'><input class='form-check-input' type='checkbox' value='' id=${result.logs[0].args.candidateID}><label class='form-check-label' for=1>Candidate1</label></div>`)
+          instance.addproposal("shareholder proposal: decrease amount of financial credit risk","financial responsibility").then(function(result){
+            $("#proposal-box").append(`<div class='form-check'><input class='form-check-input' type='checkbox' value='' id=${result.logs[0].args.proposalID}><label class='form-check-label' for=1>proposal1</label></div>`)
           })
           // the global variable will take the value of this variable
-          numOfCandidates = 2 
+          numOfproposals = 2 
         }
-        else { // if candidates were already added to the contract we loop through them and display them
-          for (var i = 0; i < numOfCandidates; i++ ){
-            // gets candidates and displays them
-            instance.getCandidate(i).then(function(data){
-              $("#candidate-box").append(`<div class="form-check"><input class="form-check-input" type="checkbox" value="" id=${data[0]}><label class="form-check-label" for=${data[0]}>${window.web3.toAscii(data[1])}</label></div>`)
+        else { // if proposals were already added to the contract we loop through them and display them
+          for (var i = 0; i < numOfproposals; i++ ){
+            // gets proposals and displays them
+            instance.getproposal(i).then(function(data){
+              $("#proposal-box").append(`<div class="form-check"><input class="form-check-input" type="checkbox" value="" id=${data[0]}><label class="form-check-label" for=${data[0]}>${window.web3.toAscii(data[1])}</label></div>`)
             })
           }
         }
-        // sets global variable for number of Candidates
+        // sets global variable for number of proposals
         // displaying and counting the number of Votes depends on this
-        window.numOfCandidates = numOfCandidates 
+        window.numOfproposals = numOfproposals 
       })
     }).catch(function(err){ 
       console.error("ERROR! " + err.message)
@@ -68,21 +68,21 @@ window.App = {
       $("#msg").html("<p>Please enter id.</p>")
       return
     }
-    // Checks whether a candidate is chosen or not.
-    // if it is, we get the Candidate's ID, which we will use
+    // Checks whether a proposal is chosen or not.
+    // if it is, we get the proposal's ID, which we will use
     // when we call the vote function in Smart Contracts
-    if ($("#candidate-box :checkbox:checked").length > 0){ 
+    if ($("#proposal-box :checkbox:checked").length > 0){ 
       // just takes the first checked box and gets its id
-      var candidateID = $("#candidate-box :checkbox:checked")[0].id
+      var proposalID = $("#proposal-box :checkbox:checked")[0].id
     } 
     else {
-      // print message if user didn't vote for candidate
-      $("#msg").html("<p>Please vote for a candidate.</p>")
+      // print message if user didn't vote for proposal
+      $("#msg").html("<p>Please vote for a proposal.</p>")
       return
     }
-    // Actually voting for the Candidate using the Contract and displaying "Voted"
+    // Actually voting for the proposal using the Contract and displaying "Voted"
     VotingContract.deployed().then(function(instance){
-      instance.vote(uid,parseInt(candidateID)).then(function(result){
+      instance.vote(uid,parseInt(proposalID)).then(function(result){
         $("#msg").html("<p>Voted</p>")
       })
     }).catch(function(err){ 
@@ -93,17 +93,17 @@ window.App = {
   // function called when the "Count Votes" button is clicked
   findNumOfVotes: function() {
     VotingContract.deployed().then(function(instance){
-      // this is where we will add the candidate vote Info before replacing whatever is in #vote-box
+      // this is where we will add the proposal vote Info before replacing whatever is in #vote-box
       var box = $("<section></section>") 
 
-      // loop through the number of candidates and display their votes
-      for (var i = 0; i < window.numOfCandidates; i++){
+      // loop through the number of proposals and display their votes
+      for (var i = 0; i < window.numOfproposals; i++){
         // calls two smart contract functions
-        var candidatePromise = instance.getCandidate(i)
+        var proposalPromise = instance.getproposal(i)
         var votesPromise = instance.totalVotes(i)
 
         // resolves Promises by adding them to the variable box
-        Promise.all([candidatePromise,votesPromise]).then(function(data){
+        Promise.all([proposalPromise,votesPromise]).then(function(data){
           box.append(`<p>${window.web3.toAscii(data[0][1])}: ${data[1]}</p>`)
         }).catch(function(err){ 
           console.error("ERROR! " + err.message)

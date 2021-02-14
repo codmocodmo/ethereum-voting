@@ -2,12 +2,12 @@ pragma solidity ^0.4.18;
 // written for Solidity version 0.4.18 and above that doesnt break functionality
 
 contract Voting {
-    // an event that is called whenever a StrategicDecision is added so the frontend could
-    // appropriately display the StrategicDecision with the right element id (it is used
-    // to vote for the StrategicDecision, since it is one of arguments for the function "vote")
-    event AddedStrategicDecision(uint StrategicDecisionID);
+    // an event that is called whenever a proposal is added so the frontend could
+    // appropriately display the proposal with the right element id (it is used
+    // to vote for the proposal, since it is one of arguments for the function "vote")
+    event Addedproposal(uint proposalID);
 
-    // describes a Voter, which has an id and the ID of the StrategicDecision they voted for
+    // describes a shareholder, which has an id and the ID of the proposal they voted for
     address owner;
     function Voting()public {
         owner=msg.sender;
@@ -16,50 +16,49 @@ contract Voting {
         require(msg.sender == owner);
         _;
     }
-    struct Voter {
+    struct shareholder {
         bytes32 uid; // bytes32 type are basically strings
-        uint numberofVotingShares;
-        uint StrategicDecisionIDVote;
+        uint proposalIDVote;
     }
-    // describes a StrategicDecision
-    struct StrategicDecision {
+    // describes a proposal
+    struct proposal {
         bytes32 name;
-        bytes32 Category; 
+        bytes32 party; 
         // "bool doesExist" is to check if this Struct exists
-        // This is so we can keep track of the StrategicDecisions 
+        // This is so we can keep track of the proposals 
         bool doesExist; 
     }
 
-    // These state variables are used keep track of the number of StrategicDecisions/Voters 
+    // These state variables are used keep track of the number of proposals/shareholders 
     // and used to as a way to index them     
-    uint numStrategicDecisions; // declares a state variable - number Of StrategicDecisions
-    uint numVoters;
+    uint numproposals; // declares a state variable - number Of proposals
+    uint numshareholders;
 
     
     // Think of these as a hash table, with the key as a uint and value of 
-    // the struct StrategicDecision/Voter. These mappings will be used in the majority
+    // the struct proposal/shareholder. These mappings will be used in the majority
     // of our transactions/calls
-    // These mappings will hold all the StrategicDecisions and Voters respectively
-    mapping (uint => StrategicDecision) StrategicDecisions;
-    mapping (uint => Voter) voters;
+    // These mappings will hold all the proposals and shareholders respectively
+    mapping (uint => proposal) proposals;
+    mapping (uint => shareholder) shareholders;
     
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      *  These functions perform transactions, editing the mappings *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    function addStrategicDecision(bytes32 name, bytes32 Category) onlyOwner public {
-        // StrategicDecisionID is the return variable
-        uint StrategicDecisionID = numStrategicDecisions++;
-        // Create new StrategicDecision Struct with name and saves it to storage.
-        StrategicDecisions[StrategicDecisionID] = StrategicDecision(name,Category,true);
-        AddedStrategicDecision(StrategicDecisionID);
+    function addproposal(bytes32 name, bytes32 party) onlyOwner public {
+        // proposalID is the return variable
+        uint proposalID = numproposals++;
+        // Create new proposal Struct with name and saves it to storage.
+        proposals[proposalID] = proposal(name,party,true);
+        Addedproposal(proposalID);
     }
 
-    function vote(bytes32 uid, uint StrategicDecisionID) public {
-        // checks if the struct exists for that StrategicDecision
-        if (StrategicDecisions[StrategicDecisionID].doesExist == true) {
-            uint voterID = numVoters++; //voterID is the return variable
-            voters[voterID] = Voter(uid,StrategicDecisionID);
+    function vote(bytes32 uid, uint proposalID) public {
+        // checks if the struct exists for that proposal
+        if (proposals[proposalID].doesExist == true) {
+            uint shareholderID = numshareholders++; //shareholderID is the return variable
+            shareholders[shareholderID] = shareholder(uid,proposalID);
         }
     }
 
@@ -68,34 +67,29 @@ contract Voting {
      * * * * * * * * * * * * * * * * * * * * * * * * * */
     
 
-    // finds the total amount of votes for a specific StrategicDecision by looping
-    // through voters 
-    
-    function returnnumberofVotingShares(bytes32 uid) public returns (uint) {
-        return Voter[uid].numberofVotingShares;
-    }
-
-    function totalVotes(uint StrategicDecisionID) view public returns (uint) {
+    // finds the total amount of votes for a specific proposal by looping
+    // through shareholders 
+    function totalVotes(uint proposalID) view public returns (uint) {
         uint numOfVotes = 0; // we will return this
-        for (uint i = 0; i < numVoters; i++) {
-            // if the voter votes for this specific StrategicDecision, we increment the number
-            if (voters[i].StrategicDecisionIDVote == StrategicDecisionID) {
-                numOfVotes += Voter[i].numberofVotingShares;
+        for (uint i = 0; i < numshareholders; i++) {
+            // if the shareholder votes for this specific proposal, we increment the number
+            if (shareholders[i].proposalIDVote == proposalID) {
+                numOfVotes++;
             }
         }
         return numOfVotes; 
     }
 
-    function getNumOfStrategicDecisions() public view returns(uint) {
-        return numStrategicDecisions;
+    function getNumOfproposals() public view returns(uint) {
+        return numproposals;
     }
 
-    function getNumOfVoters() public view returns(uint) {
-        return numVoters;
+    function getNumOfshareholders() public view returns(uint) {
+        return numshareholders;
     }
-    // returns StrategicDecision information, including its ID, name, and Category
-    function getStrategicDecision(uint StrategicDecisionID) public view returns (uint,bytes32, bytes32) {
-        return (StrategicDecisionID,StrategicDecisions[StrategicDecisionID].name,StrategicDecisions[StrategicDecisionID].Category);
+    // returns proposal information, including its ID, name, and party
+    function getproposal(uint proposalID) public view returns (uint,bytes32, bytes32) {
+        return (proposalID,proposals[proposalID].name,proposals[proposalID].party);
     }
 }
 
